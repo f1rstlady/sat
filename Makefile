@@ -1,7 +1,8 @@
+BIN=dpll
 .PHONY : all clean
 
-DPLL : DPLL.hs
+$(BIN) : Main.hs CNF.hs DPLL.hs
 	ghc -o $@ $< -dynamic --make -O2 -Wall
 
 clean :
-	rm -rf *.hi *.o DPLL
+	rm -rf *.hi *.o $(BIN)
