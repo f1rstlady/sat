@@ -1,9 +1,10 @@
-{-# LANGUAGE GADTs #-}
+{-# LANGUAGE GADTs                      #-}
+{-# LANGUAGE GeneralisedNewtypeDeriving #-}
 
 module DPLL
   ( Selector (..)
   , Step (..)
-  , Log
+  , Log (..)
   , Transformation
   , dpll
   , satisfiable
@@ -31,7 +32,14 @@ data Step = Propagate (CNF Literal) (Either Bool (CNF Conjunction))
           | Eliminate Selector [CNF Literal]
           | Branch String Log (Maybe Log)
 
-type Log = [Step]
+unlines :: [String] -> String
+unlines = intercalate "\n"
+
+newtype Log = Log { steps :: [Step] }
+  deriving (Semigroup, Monoid)
+
+instance Show Log where
+  show = unlines . map show . steps
 
 instance Show Selector where
   show Units        = "unit"
@@ -48,21 +56,18 @@ instance Show Step where
       ++ showBranch (Pos x) pos
       ++ maybe [] (showBranch (Neg x)) mNeg
     where
-      unlines = intercalate "\n"
       showBranch :: CNF Literal -> Log -> [String]
       showBranch l log =
-        let indent = unlines . map ("    " ++) . lines
-         in [ " " ++ (case l of Pos _ -> "1"; Neg _ -> "2")
-              ++ ". Assume " ++ identifier l ++ " holds."
-            , unlines $ map (indent . show) log
-            ]
+        ( " " ++ (case l of Pos _ -> "1"; Neg _ -> "2")
+          ++ ". Assume " ++ identifier l ++ " holds.")
+        : (map ("    " ++) . lines $ show log)
 
 type Transformation = ExceptT Bool (Writer Log) (CNF Conjunction)
 
 propagate :: CNF Literal -> CNF Conjunction -> Transformation
 propagate l f = do
   let g = CNF.propagate l f
-  tell [Propagate l g]
+  tell $ Log [Propagate l g]
   liftEither g
 
 -- Iteratively eliminate the literals yielded by the selector.
@@ -71,7 +76,7 @@ eliminate sel f =
   case selector sel f of
     [] -> liftEither (Right f)
     ls -> do
-      tell [Eliminate sel ls]
+      tell $ Log [Eliminate sel ls]
       foldM (&) f (propagate <$> ls) >>= eliminate sel
 
 -- Branch on a random literal
@@ -81,7 +86,7 @@ branch f = do
       [(satPos, logPos), (satNeg, logNeg)] =
         runWriter . (either return dpll <=< runExceptT) . ($ f) . propagate <$>
           [Pos x, Neg x]
-  tell [Branch x logPos (if satPos then Nothing else Just logNeg)]
+  tell $ Log [Branch x logPos (if satPos then Nothing else Just logNeg)]
   return (satPos || satNeg)
 
 -- The DPLL algorithm.

@@ -8,7 +8,7 @@ import           CNF                  (CNF (..), Conjunction)
 import           DPLL                 (dpll)
 
 main :: IO ()
-main = mapM_ print $ snd . runWriter $ dpll f1
+main = print $ snd . runWriter $ dpll f1
 
 f1 :: CNF Conjunction
 f1 = And
