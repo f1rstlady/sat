@@ -22,33 +22,45 @@ import           CNF                  (CNF (..), Conjunction, Literal,
                                        variables)
 import qualified CNF                  (propagate)
 
+-- The representation of the selectors used for elimination.
 data Selector = Units | PureLiterals
 
+-- The selector associated with the representation.
 selector :: Selector -> CNF Conjunction -> [CNF Literal]
 selector Units        = units
 selector PureLiterals = pureLiterals
 
+-- The representation of the steps taken during the DPLL algorithm.
 data Step = Propagate (CNF Literal) (Either Bool (CNF Conjunction))
           | Eliminate Selector [CNF Literal]
           | Branch String Log (Maybe Log)
 
+-- A custom unlines function that omits the last '\n'.
 unlines :: [String] -> String
 unlines = intercalate "\n"
 
+-- The log is a list of steps.
 newtype Log = Log { steps :: [Step] }
   deriving (Semigroup, Monoid)
 
+-- For showing the log, print each step on a separate line instead of showing it
+-- like a usual list.
 instance Show Log where
   show = unlines . map show . steps
 
+-- To a selector, associate its corresponding name.  The name is given in
+-- singular form to let the caller decide whether it has to be shown in singular
+-- or plural form.
 instance Show Selector where
   show Units        = "unit"
   show PureLiterals = "pure literal"
 
+-- Show a step
 instance Show Step where
   show (Propagate l f) =
     "Propagate " ++ show l ++ ": " ++ either show show f ++ "."
   show (Eliminate s ls) =
+    -- Decide whether the selector has to be shown in singular or plural form.
     let sel = show s ++ (case ls of [_] -> ""; _   -> "s")
      in "Eliminate the " ++ sel ++ " " ++ intercalate ", " (map show ls) ++ "."
   show (Branch x pos mNeg) = unlines $
@@ -60,17 +72,24 @@ instance Show Step where
       showBranch l log =
         ( " " ++ (case l of Pos _ -> "1"; Neg _ -> "2")
           ++ ". Assume " ++ identifier l ++ " holds.")
+        -- Indent the steps taken in the branch.
         : (map ("    " ++) . lines $ show log)
 
+-- A transformation is a writer monad logging the intermediate results and
+-- yielding the transformed formula.  Eventually, the formula is true or false,
+-- hence the exception trait `ExceptT Bool` is added.
 type Transformation = ExceptT Bool (Writer Log) (CNF Conjunction)
 
+-- Propagate the literal in the formula and simplify accordingly.  Additionally,
+-- log the propagated literal and the simplified formula.
 propagate :: CNF Literal -> CNF Conjunction -> Transformation
 propagate l f = do
   let g = CNF.propagate l f
   tell $ Log [Propagate l g]
   liftEither g
 
--- Iteratively eliminate the literals yielded by the selector.
+-- Iteratively eliminate the literals yielded by the selector.  Additionally,
+-- log the selector and the selected literals.
 eliminate :: Selector -> CNF Conjunction -> Transformation
 eliminate sel f =
   case selector sel f of
@@ -79,7 +98,9 @@ eliminate sel f =
       tell $ Log [Eliminate sel ls]
       foldM (&) f (propagate <$> ls) >>= eliminate sel
 
--- Branch on a random literal
+-- Branch on a random literal.  Additionally, log the variable that is branched
+-- on and the log of the DPLL algorithm of each branch.  The log for second
+-- branch is only added if the first branch was not satisfiable.
 branch :: CNF Conjunction -> Writer Log Bool
 branch f = do
   let x = head (variables f)
@@ -89,12 +110,12 @@ branch f = do
   tell $ Log [Branch x logPos (if satPos then Nothing else Just logNeg)]
   return (satPos || satNeg)
 
--- The DPLL algorithm.
+-- The DPLL algorithm, with its steps contained in the writer monad.
 dpll :: CNF Conjunction -> Writer Log Bool
 dpll =
   runExceptT . (eliminate Units >=> eliminate PureLiterals)
     >=> either return branch
 
--- Whether the formula is satisfiable
+-- Whether the formula is satisfiable.
 satisfiable :: CNF Conjunction -> Bool
 satisfiable = fst . runWriter . dpll

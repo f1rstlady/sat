@@ -50,26 +50,26 @@ instance Show (CNF a) where
       [] -> "⊤"
       es -> intercalate " ∧ " (map show es)
 
--- Get the identifier of a literal.
+-- Get the identifier of the literal.
 identifier :: CNF Literal -> String
 identifier (Pos x) = x
 identifier (Neg x) = x
 
--- Get the variables of a formula.
+-- Get the variables of the formula.
 variables :: CNF a -> [String]
 variables (Pos x)  = [x]
 variables (Neg x)  = [x]
 variables (Or ls)  = ls >>= variables
 variables (And ds) = ds >>= variables
 
--- Get the units of a disjunction.
+-- Get the units of the disjunction.
 units :: CNF Conjunction -> [CNF Literal]
 units (And ds) = foldr appendIfUnit [] ds where
   appendIfUnit :: CNF Disjunction -> [CNF Literal] -> [CNF Literal]
   appendIfUnit (Or [l]) = (l :)
   appendIfUnit _        = id
 
--- Get the pure literals of a formula.
+-- Get the pure literals of the formula.
 pureLiterals :: CNF a -> [CNF Literal]
 pureLiterals = catMaybes . elems . flip pureLiterals' empty
 
@@ -88,7 +88,7 @@ pureLiterals' f m =
       checkConflict (Just l) (Just k) = if k == l then Just k else Nothing
       checkConflict Nothing  (Just _) = error "Trying to update nothing!"
 
--- Propagate a literal in a formula and simplify it accordingly.
+-- Propagate the literal in the formula and simplify accordingly.
 propagate :: CNF Literal -> CNF t -> Either Bool (CNF t)
 propagate (Pos x) l@(Pos y) = if x == y then Left True  else Right l
 propagate (Neg x) l@(Pos y) = if x == y then Left False else Right l
