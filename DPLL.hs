@@ -18,8 +18,7 @@ import           Data.List            (intercalate)
 import           Prelude              hiding (log, unlines)
 
 import           CNF                  (CNF (..), Conjunction, Literal,
-                                       identifier, pureLiterals, units,
-                                       variables)
+                                       pureLiterals, units, variables)
 import qualified CNF                  (propagate)
 
 -- The representation of the selectors used for elimination.
@@ -71,7 +70,7 @@ instance Show Step where
       showBranch :: CNF Literal -> Log -> [String]
       showBranch l log =
         ( " " ++ (case l of Pos _ -> "1"; Neg _ -> "2")
-          ++ ". Assume " ++ identifier l ++ " holds.")
+          ++ ". Assume " ++ show l ++ " holds.")
         -- Indent the steps taken in the branch.
         : (map ("    " ++) . lines $ show log)
 
