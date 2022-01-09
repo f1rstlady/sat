@@ -7,6 +7,7 @@ module DPLL
   , Log (..)
   , Transformation
   , dpll
+  , solution
   , satisfiable
   ) where
 
@@ -114,6 +115,15 @@ dpll :: CNF Conjunction -> Writer Log Bool
 dpll =
   runExceptT . (eliminate Units >=> eliminate PureLiterals)
     >=> either return branch
+
+-- From the log of the DPLL algorithm applied on a satisfiable formula, extract
+-- the found solution.
+solution :: Log -> [CNF Literal]
+solution = foldr extractPropagations [] . steps where
+  extractPropagations (Propagate l _)        = (l :)
+  extractPropagations (Eliminate _ _)        = id
+  extractPropagations (Branch _ left mRight) = (solution correctBranch ++) where
+    correctBranch = fromMaybe left mRight
 
 -- Whether the formula is satisfiable.
 satisfiable :: CNF Conjunction -> Bool
