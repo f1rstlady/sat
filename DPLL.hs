@@ -18,10 +18,9 @@ import           Data.Function        ((&))
 import           Data.Maybe           (fromMaybe)
 import           Prelude              hiding (log)
 
-import           CNF                  (CNF (..), Conjunction, Literal,
-                                       pureLiterals, units, variables)
-import qualified CNF                  (propagate)
-import           Printer.Util         (enumerate, indent, pluralS, unlines')
+import           CNF                  hiding (eliminate, propagate)
+import qualified CNF
+import           Printer.Util
 
 -- The representation of the selectors used for elimination.
 data Selector = Units | PureLiterals

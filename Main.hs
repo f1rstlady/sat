@@ -4,8 +4,8 @@ module Main
 
 import           Control.Monad.Writer (runWriter)
 
-import           CNF                  (CNF (..), Conjunction)
-import           DPLL                 (dpll)
+import           CNF
+import           DPLL
 
 main :: IO ()
 main = print $ snd . runWriter $ dpll f1

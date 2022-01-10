@@ -5,7 +5,7 @@ module Printer.Util
   , enumerate
   ) where
 
-import           Data.List            (intercalate)
+import           Data.List (intercalate)
 
 -- A custom unlines function that omits the last '\n'.
 unlines' :: [String] -> String

@@ -7,9 +7,9 @@ module Printer.Latex
 import           Data.List    (intercalate)
 import           Prelude      hiding (log)
 
-import           CNF          (CNF (..), Literal)
-import           DPLL         (Log, Step (..), steps)
-import           Printer.Util (enumerate, indent, pluralS, unlines')
+import           CNF
+import           DPLL
+import           Printer.Util
 
 -- Generate code to print data with LaTeX.
 class ToLatex a where
