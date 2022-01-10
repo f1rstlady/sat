@@ -15,12 +15,13 @@ import           Control.Monad        (foldM, (<=<), (>=>))
 import           Control.Monad.Except (ExceptT, liftEither, runExceptT)
 import           Control.Monad.Writer (Writer, runWriter, tell)
 import           Data.Function        ((&))
-import           Data.List            (intercalate)
-import           Prelude              hiding (log, unlines)
+import           Data.Maybe           (fromMaybe)
+import           Prelude              hiding (log)
 
 import           CNF                  (CNF (..), Conjunction, Literal,
                                        pureLiterals, units, variables)
 import qualified CNF                  (propagate)
+import           Printer.Util         (enumerate, indent, pluralS, unlines')
 
 -- The representation of the selectors used for elimination.
 data Selector = Units | PureLiterals
@@ -35,10 +36,6 @@ data Step = Propagate (CNF Literal) (Either Bool (CNF Conjunction))
           | Eliminate Selector [CNF Literal]
           | Branch String Log (Maybe Log)
 
--- A custom unlines function that omits the last '\n'.
-unlines :: [String] -> String
-unlines = intercalate "\n"
-
 -- The log is a list of steps.
 newtype Log = Log { steps :: [Step] }
   deriving (Semigroup, Monoid)
@@ -46,7 +43,7 @@ newtype Log = Log { steps :: [Step] }
 -- For showing the log, print each step on a separate line instead of showing it
 -- like a usual list.
 instance Show Log where
-  show = unlines . map show . steps
+  show = unlines' . map show . steps
 
 -- To a selector, associate its corresponding name.  The name is given in
 -- singular form to let the caller decide whether it has to be shown in singular
@@ -60,10 +57,9 @@ instance Show Step where
   show (Propagate l f) =
     "Propagate " ++ show l ++ ": " ++ either show show f ++ "."
   show (Eliminate s ls) =
-    -- Decide whether the selector has to be shown in singular or plural form.
-    let sel = show s ++ (case ls of [_] -> ""; _   -> "s")
-     in "Eliminate the " ++ sel ++ " " ++ intercalate ", " (map show ls) ++ "."
-  show (Branch x pos mNeg) = unlines $
+    "Eliminate the " ++ show s ++ pluralS ls
+      ++ " " ++ enumerate (show <$> ls) ++ "."
+  show (Branch x pos mNeg) = unlines' $
     [ "Branch on the variable " ++ x ++ "."]
       ++ showBranch (Pos x) pos
       ++ maybe [] (showBranch (Neg x)) mNeg
@@ -73,7 +69,7 @@ instance Show Step where
         ( " " ++ (case l of Pos _ -> "1"; Neg _ -> "2")
           ++ ". Assume " ++ show l ++ " holds.")
         -- Indent the steps taken in the branch.
-        : (map ("    " ++) . lines $ show log)
+        : (map (indent 4) . lines $ show log)
 
 -- A transformation is a writer monad logging the intermediate results and
 -- yielding the transformed formula.  Eventually, the formula is true or false,
