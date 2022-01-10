@@ -10,7 +10,6 @@ import           Prelude              hiding (log)
 import           CNF
 import           DPLL
 import           Options
-import           Printer.Util
 
 main :: IO ()
 main = do
@@ -21,8 +20,8 @@ main = do
      then do
        putStrLn "The formula is satisfiable."
        when (showSolution opts) $
-         let sol = enumerate . map show $ solution log
-         in putStrLn $ "A solution of the formula is " ++ sol ++ "."
+         let sol = show (solution log)
+          in putStrLn $ "A solution of the formula is " ++ sol ++ "."
      else putStrLn "The formula is not satisfiable."
 
 f1 :: CNF Conjunction

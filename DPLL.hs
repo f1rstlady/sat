@@ -7,6 +7,7 @@ module DPLL
   , Log (..)
   , Transformation
   , dpll
+  , Solution (..)
   , solution
   , satisfiable
   ) where
@@ -111,14 +112,21 @@ dpll =
   runExceptT . (eliminate Units >=> eliminate PureLiterals)
     >=> either return branch
 
+-- The representation of a solution.
+newtype Solution = Solution [CNF Literal]
+
+-- For showing a solution, enumerate its literals.
+instance Show Solution where
+  show (Solution ls) = enumerate (show <$> ls)
+
 -- From the log of the DPLL algorithm applied on a satisfiable formula, extract
 -- the found solution.
-solution :: Log -> [CNF Literal]
-solution = foldr extractPropagations [] . steps where
-  extractPropagations (Propagate l _)        = (l :)
-  extractPropagations (Eliminate _ _)        = id
-  extractPropagations (Branch _ left mRight) = (solution correctBranch ++) where
-    correctBranch = fromMaybe left mRight
+solution :: Log -> Solution
+solution = Solution . foldr extractPropagations [] . steps where
+  extractPropagations (Propagate l _) = (l :)
+  extractPropagations (Eliminate _ _) = id
+  extractPropagations (Branch _ left mRight) = (ls ++) where
+    (Solution ls) = solution (fromMaybe left mRight)
 
 -- Whether the formula is satisfiable.
 satisfiable :: CNF Conjunction -> Bool

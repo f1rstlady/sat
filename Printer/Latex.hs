@@ -67,3 +67,7 @@ instance ToLatex Log where
 printResult :: Either Bool (CNF t) -> String
 printResult (Left b)  = ' ' : show b ++ "."
 printResult (Right f) = '\n' : indent sw (display f)
+
+-- Print a solution to LaTeX.
+instance ToLatex Solution where
+  toLatex (Solution ls) = enumerate (inline <$> ls)
