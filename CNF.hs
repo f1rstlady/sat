@@ -44,11 +44,11 @@ instance Show (CNF a) where
     case ls of
       []  -> "⊥"
       [k] -> show k
-      ks  -> "(" ++ intercalate " ∨ " (map show ks) ++ ")"
+      _   -> "(" ++ intercalate " ∨ " (map show ls) ++ ")"
   show (And ds) =
     case ds of
       [] -> "⊤"
-      es -> intercalate " ∧ " (map show es)
+      _  -> intercalate " ∧ " (map show ds)
 
 -- Get the identifier of the literal.
 identifier :: CNF Literal -> String
