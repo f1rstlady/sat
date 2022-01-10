@@ -84,9 +84,9 @@ pureLiterals' f m =
     And ds    -> foldr pureLiterals' m ds
   where
     insertLiteral l = insertWith checkConflict (identifier l) (Just l) m where
-      checkConflict _        Nothing  = Nothing
-      checkConflict (Just l) (Just k) = if k == l then Just k else Nothing
-      checkConflict Nothing  (Just _) = error "Trying to update nothing!"
+      checkConflict _        Nothing   = Nothing
+      checkConflict (Just k) (Just k') = if k == k' then Just k' else Nothing
+      checkConflict Nothing  (Just _)  = error "Trying to update nothing!"
 
 -- Propagate the literal in the formula and simplify accordingly.
 propagate :: CNF Literal -> CNF t -> Either Bool (CNF t)
