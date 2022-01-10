@@ -2,13 +2,28 @@ module Main
   ( main
   ) where
 
+import           Control.Monad        (when)
 import           Control.Monad.Writer (runWriter)
+import           Options.Applicative  (execParser)
+import           Prelude              hiding (log)
 
 import           CNF
 import           DPLL
+import           Options
+import           Printer.Util
 
 main :: IO ()
-main = print $ snd . runWriter $ dpll f1
+main = do
+  opts <- execParser optionsInfo
+  let (sat, log) = runWriter $ dpll f1
+  when (listSteps opts) (print log)
+  if sat
+     then do
+       putStrLn "The formula is satisfiable."
+       when (showSolution opts) $
+         let sol = enumerate . map show $ solution log
+         in putStrLn $ "A solution of the formula is " ++ sol ++ "."
+     else putStrLn "The formula is not satisfiable."
 
 f1 :: CNF Conjunction
 f1 = And
