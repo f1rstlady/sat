@@ -6,14 +6,19 @@ module Options
   , optionsInfo
   ) where
 
-import           Options.Applicative (Parser, ParserInfo, eitherReader,
-                                      fullDesc, header, help, helper, info,
-                                      long, metavar, option, progDesc, short,
-                                      switch, value)
+import           Options.Applicative (Parser, ParserInfo, argument,
+                                      eitherReader, fullDesc, header, help,
+                                      helper, info, long, metavar, option,
+                                      progDesc, short, switch, value)
+import           Text.Megaparsec     (parseMaybe)
+
+import           CNF
+import qualified Parser
 
 -- The options.
 data Options = Options
-  { listSteps    :: Bool
+  { formula      :: CNF Conjunction
+  , listSteps    :: Bool
   , outputFormat :: OutputFormat
   , showSolution :: Bool
   }
@@ -23,7 +28,17 @@ data OutputFormat = Text | Latex
 
 -- The options parser.
 options :: Parser Options
-options = Options <$> _listSteps <*> _outputFormat <*> _showSolution where
+options = Options <$> _formula
+                  <*> _listSteps
+                  <*> _outputFormat
+                  <*> _showSolution where
+  _formula = argument parseFormula $
+       metavar "FORMULA"
+    where
+      parseFormula = eitherReader $
+        \ s -> case parseMaybe Parser.formula s of
+          Nothing -> Left "parse error."
+          Just f  -> Right f
   _listSteps = switch $
        long "list-steps"
     <> short 'l'
