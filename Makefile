@@ -5,4 +5,4 @@ $(BIN) : Main.hs CNF.hs DPLL.hs Options.hs Parser.hs Printer/Util.hs Printer/Lat
 	ghc -o $@ $< -dynamic --make -O2 -Wall
 
 clean :
-	rm -rf *.hi *.o $(BIN)
+	rm -rf **/*.hi **/*.o $(BIN)
