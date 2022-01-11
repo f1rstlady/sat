@@ -11,7 +11,7 @@ import           Options.Applicative (Parser, ParserInfo, eitherReader,
                                       long, metavar, option, progDesc, short,
                                       switch, value)
 
--- The options
+-- The options.
 data Options = Options
   { listSteps    :: Bool
   , outputFormat :: OutputFormat
@@ -21,6 +21,7 @@ data Options = Options
 -- The output format.
 data OutputFormat = Text | Latex
 
+-- The options parser.
 options :: Parser Options
 options = Options <$> _listSteps <*> _outputFormat <*> _showSolution where
   _listSteps = switch $
@@ -38,12 +39,13 @@ options = Options <$> _listSteps <*> _outputFormat <*> _showSolution where
       parseOutputFormat = eitherReader $ \ case
         "text"  -> Right Text
         "latex" -> Right Latex
-        fmt     -> Left $ "unkown output format: " ++ fmt
+        fmt     -> Left $ "unkown output format: " ++ fmt ++ "."
   _showSolution = switch $
        long "show-solution"
     <> short 's'
     <> help "Show a solution to the formula, if satisfiable."
 
+-- The options parser with the global program info and description.
 optionsInfo :: ParserInfo Options
 optionsInfo = info (helper <*> options) $
      fullDesc
