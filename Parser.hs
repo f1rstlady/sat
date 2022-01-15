@@ -9,7 +9,6 @@ import           Data.Void            (Void)
 import           Text.Megaparsec      (Parsec, between, eof, many, some, try,
                                        (<?>), (<|>))
 import           Text.Megaparsec.Char (char, space, letterChar)
-import           Util                 (singleton)
 
 import           CNF                  hiding (identifier)
 
@@ -41,7 +40,7 @@ disjunction =
       (try oneLiteral <|> between (char '(') (char ')') moreLiterals)
   <?> "disjunction"
     where
-      oneLiteral = Or . singleton <$> literal
+      oneLiteral = Or . (: []) <$> literal
       moreLiterals =
         (\ l ls -> Or (l:ls)) <$>
           (space *> literal)
