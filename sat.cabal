@@ -3,54 +3,41 @@ name:               sat
 version:            0.1.0.0
 synopsis:           A SAT solver using the DPLL algorithm.
 category:           Math
-
 description:
-    This is an application for SAT solving, using the DPLL algorithm.  It may
-    yield the intermediate steps performed during algorithm execution and a
-    solution to formula if satisifiable.  Additionally, output for LaTeX may be
-    generated.
+  This is an application for SAT solving, using the DPLL algorithm.  It may
+  yield the intermediate steps performed during algorithm execution and a
+  solution to formula if satisifiable.  Additionally, output for LaTeX may be
+  generated.
 
 copyright:          (c) 2022 Benedikt Rips
 license:            GPL-3.0-or-later
 license-file:       LICENSE
-
 author:             Benedikt Rips
 maintainer:         Benedikt Rips <benedikt.rips@gmail.com>
-
 extra-source-files: CHANGELOG.md
-
 homepage:           https://github.com/f1rstlady/sat
 bug-reports:        https://github.com/f1rstlady/sat/issues
 
 source-repository head
-    type:     git
-    location: https://github.com/f1rstlady/sat.git
+  type:     git
+  location: https://github.com/f1rstlady/sat.git
 
 executable sat
-    main-is:          Main.hs
-    ghc-options:      -Wall
-    hs-source-dirs:   app
-    default-language: Haskell2010
+  main-is:          Main.hs
+  ghc-options:      -Wall
+  hs-source-dirs:   app
+  default-language: Haskell2010
+  other-modules:
+    CNF
+    DPLL
+    Options
+    Parser
+    Printer.Latex
+    Printer.Util
 
-    other-modules:
-        CNF
-        DPLL
-        Parser
-        Printer.Latex
-        Printer.Util
-        Options
-
-    other-extensions:
-        EmptyDataDecls
-        EmptyDataDeriving
-        GADTs
-        GeneralisedNewtypeDeriving
-        LambdaCase
-        StandaloneDeriving
-
-    build-depends:
-        base ^>=4.15,
-        containers ^>=0.6,
-        megaparsec ^>=9.2,
-        mtl ^>=2.2,
-        optparse-applicative ^>=0.16
+  build-depends:
+    , base                  ^>=4.15
+    , containers            ^>=0.6
+    , megaparsec            ^>=9.2
+    , mtl                   ^>=2.2
+    , optparse-applicative  ^>=0.16
