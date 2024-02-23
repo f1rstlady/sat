@@ -23,9 +23,12 @@ source-repository head
   type:     git
   location: https://github.com/f1rstlady/sat.git
 
+common warnings
+  ghc-options: -Wall
+
 executable sat
+  import:           warnings
   main-is:          Main.hs
-  ghc-options:      -Wall
   hs-source-dirs:   app
   default-language: GHC2021
   other-modules:
