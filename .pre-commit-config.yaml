@@ -1,0 +1,66 @@
+default_install_hook_types:
+  - pre-commit
+  - pre-merge-commit
+  - commit-msg
+default_stages:
+  - pre-commit
+  - pre-merge-commit
+repos:
+  - repo: https://github.com/pre-commit/pre-commit-hooks
+    rev: v4.5.0
+    hooks:
+      - id: check-added-large-files
+      - id: check-merge-conflict
+      - id: check-symlinks
+      - id: check-vcs-permalinks
+        name: check that VCS links are permanent links
+      - id: detect-private-key
+        name: check for added private keys
+      - id: mixed-line-ending
+        name: check for mixed line endings
+        args: [--fix=no]
+      - id: trailing-whitespace
+      - id: check-yaml
+        name: check YAML is parsable
+  - repo: https://github.com/jumanjihouse/pre-commit-hooks
+    rev: 3.0.0
+    hooks:
+      - id: forbid-binary
+        name: check for added binaries
+  - repo: local
+    hooks:
+      - id: gitlint
+        name: check commit message is in conventional commits format
+        entry: gitlint
+        language: system
+        args: [--staged, --msg-filename]
+        stages: [commit-msg]
+      - id: hlint
+        name: lint with hlint
+        entry: hlint
+        language: system
+        args: [--quiet]
+        types: [haskell]
+      - id: cabal-fmt
+        name: format with cabal-fmt
+        entry: cabal-fmt
+        language: system
+        args: [--inplace]
+        files: '^.*\.cabal$'
+      - id: fourmolu
+        name: format with fourmolu
+        entry: fourmolu
+        language: system
+        args: [--mode=inplace]
+        types: [haskell]
+      - id: nixfmt
+        name: format with nixfmt
+        entry: nixfmt
+        language: system
+        args: [--verify]
+        types: [nix]
+      - id: yamlfmt
+        name: format with yamlfmt
+        entry: yamlfmt
+        language: system
+        types: [yaml]

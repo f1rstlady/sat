@@ -1,0 +1,5 @@
+column-limit: 80
+haddock-style: single-line
+indentation: 2
+let-style: inline
+respectful: false
