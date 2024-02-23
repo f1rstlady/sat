@@ -1,43 +1,42 @@
-{-# LANGUAGE GADTs                      #-}
-{-# LANGUAGE GeneralisedNewtypeDeriving #-}
+{-# LANGUAGE GADTs #-}
 
-module DPLL
-  ( Selector (..)
-  , Step (..)
-  , Log (..)
-  , Transformation
-  , dpll
-  , Solution (..)
-  , solution
-  , satisfiable
-  ) where
+module DPLL (
+  Selector (..),
+  Step (..),
+  Log (..),
+  Transformation,
+  dpll,
+  Solution (..),
+  solution,
+  satisfiable,
+) where
 
-import           Control.Monad        (foldM, (<=<), (>=>))
-import           Control.Monad.Except (ExceptT, liftEither, runExceptT)
-import           Control.Monad.Writer (Writer, runWriter, tell)
-import           Data.Function        ((&))
-import           Data.Maybe           (fromMaybe)
-import           Prelude              hiding (log)
-
-import           CNF                  hiding (eliminate, propagate)
-import qualified CNF
-import           Printer.Util
+import CNF hiding (eliminate, propagate)
+import CNF qualified
+import Control.Monad (foldM, (<=<), (>=>))
+import Control.Monad.Except (ExceptT, liftEither, runExceptT)
+import Control.Monad.Writer (Writer, runWriter, tell)
+import Data.Function ((&))
+import Data.Maybe (fromMaybe)
+import Printer.Util
+import Prelude hiding (log)
 
 -- The representation of the selectors used for elimination.
 data Selector = Units | PureLiterals
 
 -- The selector associated with the representation.
 selector :: Selector -> CNF Conjunction -> [CNF Literal]
-selector Units        = units
+selector Units = units
 selector PureLiterals = pureLiterals
 
 -- The representation of the steps taken during the DPLL algorithm.
-data Step = Propagate (CNF Literal) (Either Bool (CNF Conjunction))
-          | Eliminate Selector [CNF Literal]
-          | Branch String Log (Maybe Log)
+data Step
+  = Propagate (CNF Literal) (Either Bool (CNF Conjunction))
+  | Eliminate Selector [CNF Literal]
+  | Branch String Log (Maybe Log)
 
 -- The log is a list of steps.
-newtype Log = Log { steps :: [Step] }
+newtype Log = Log {steps :: [Step]}
   deriving (Semigroup, Monoid)
 
 -- For showing the log, print each step on a separate line instead of showing it
@@ -49,7 +48,7 @@ instance Show Log where
 -- singular form to let the caller decide whether it has to be shown in singular
 -- or plural form.
 instance Show Selector where
-  show Units        = "unit"
+  show Units = "unit"
   show PureLiterals = "pure literal"
 
 -- Show a step
@@ -57,17 +56,26 @@ instance Show Step where
   show (Propagate l f) =
     "Propagate " ++ show l ++ ": " ++ either show show f ++ "."
   show (Eliminate s ls) =
-    "Eliminate the " ++ show s ++ pluralS ls
-      ++ " " ++ enumerate (show <$> ls) ++ "."
-  show (Branch x pos mNeg) = unlines' $
-    [ "Branch on the variable " ++ x ++ "."]
-      ++ showBranch (Pos x) pos
-      ++ maybe [] (showBranch (Neg x)) mNeg
-    where
-      showBranch :: CNF Literal -> Log -> [String]
-      showBranch l log =
-        ( " " ++ (case l of Pos _ -> "1"; Neg _ -> "2")
-          ++ ". Assume " ++ show l ++ " holds.")
+    "Eliminate the "
+      ++ show s
+      ++ pluralS ls
+      ++ " "
+      ++ enumerate (show <$> ls)
+      ++ "."
+  show (Branch x pos mNeg) =
+    unlines' $
+      ["Branch on the variable " ++ x ++ "."]
+        ++ showBranch (Pos x) pos
+        ++ maybe [] (showBranch (Neg x)) mNeg
+   where
+    showBranch :: CNF Literal -> Log -> [String]
+    showBranch l log =
+      ( " "
+          ++ (case l of Pos _ -> "1"; Neg _ -> "2")
+          ++ ". Assume "
+          ++ show l
+          ++ " holds."
+      )
         -- Indent the steps taken in the branch.
         : (map (indent 4) . lines $ show log)
 
@@ -101,8 +109,8 @@ branch :: CNF Conjunction -> Writer Log Bool
 branch f = do
   let x = head (variables f)
       [(satPos, logPos), (satNeg, logNeg)] =
-        runWriter . (either return dpll <=< runExceptT) . ($ f) . propagate <$>
-          [Pos x, Neg x]
+        runWriter . (either return dpll <=< runExceptT) . ($ f) . propagate
+          <$> [Pos x, Neg x]
   tell $ Log [Branch x logPos (if satPos then Nothing else Just logNeg)]
   return (satPos || satNeg)
 
@@ -122,10 +130,12 @@ instance Show Solution where
 -- From the log of the DPLL algorithm applied on a satisfiable formula, extract
 -- the found solution.
 solution :: Log -> Solution
-solution = Solution . foldr extractPropagations [] . steps where
+solution = Solution . foldr extractPropagations [] . steps
+ where
   extractPropagations (Propagate l _) = (l :)
   extractPropagations (Eliminate _ _) = id
-  extractPropagations (Branch _ left mRight) = (ls ++) where
+  extractPropagations (Branch _ left mRight) = (ls ++)
+   where
     (Solution ls) = solution (fromMaybe left mRight)
 
 -- Whether the formula is satisfiable.

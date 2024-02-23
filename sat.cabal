@@ -26,7 +26,7 @@ executable sat
   main-is:          Main.hs
   ghc-options:      -Wall
   hs-source-dirs:   app
-  default-language: Haskell2010
+  default-language: GHC2021
   other-modules:
     CNF
     DPLL
