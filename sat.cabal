@@ -1,22 +1,22 @@
-cabal-version:      3.0
-name:               sat
-version:            0.1.0.0
-synopsis:           A SAT solver using the DPLL algorithm.
-category:           Math
+cabal-version:   3.4
+name:            sat
+version:         0.1.0.0
+synopsis:        A SAT solver using the DPLL algorithm.
+category:        Math
 description:
   This is an application for SAT solving, using the DPLL algorithm.  It may
   yield the intermediate steps performed during algorithm execution and a
   solution to formula if satisifiable.  Additionally, output for LaTeX may be
   generated.
 
-copyright:          (c) 2022 Benedikt Rips
-license:            GPL-3.0-or-later
-license-file:       LICENSE
-author:             Benedikt Rips
-maintainer:         Benedikt Rips <benedikt.rips@gmail.com>
-extra-source-files: CHANGELOG.md
-homepage:           https://github.com/f1rstlady/sat
-bug-reports:        https://github.com/f1rstlady/sat/issues
+copyright:       (c) 2022 Benedikt Rips
+license:         GPL-3.0-or-later
+license-file:    LICENSE
+author:          Benedikt Rips
+maintainer:      benedikt.rips@gmail.com
+extra-doc-files: CHANGELOG.md
+homepage:        https://github.com/f1rstlady/sat
+bug-reports:     https://github.com/f1rstlady/sat/issues
 
 source-repository head
   type:     git
