@@ -22,14 +22,14 @@ identifier = label "identifier" $ lexeme $ some letterChar
 
 -- literal := posLiteral | negLiteral
 literal :: Parser (CNF Literal)
-literal = label "literal" $ lexeme $ posLiteral <|> negLiteral
+literal = label "literal" $ posLiteral <|> negLiteral
  where
-  posLiteral = lexeme $ Pos <$> identifier
-  negLiteral = lexeme $ Neg <$> (symbol "¬" *> identifier)
+  posLiteral = Pos <$> identifier
+  negLiteral = Neg <$> (symbol "¬" *> identifier)
 
 -- disjunction := literal | `(` literal ( `∨` literal )+ `)`
 disjunction :: Parser (CNF Disjunction)
-disjunction = label "disjunction" $ lexeme $ try oneLiteral <|> moreLiterals
+disjunction = label "disjunction" $ try oneLiteral <|> moreLiterals
  where
   oneLiteral = Or . (: []) <$> literal
   moreLiterals =
@@ -37,8 +37,7 @@ disjunction = label "disjunction" $ lexeme $ try oneLiteral <|> moreLiterals
 
 -- conjunction := disjunction ( `∧` disjunction )*
 conjunction :: Parser (CNF Conjunction)
-conjunction =
-  label "conjunction" $ lexeme $ And <$> sepBy1 disjunction (symbol "∧")
+conjunction = label "conjunction" $ And <$> sepBy1 disjunction (symbol "∧")
 
 -- formula := conjunction
 formula :: Parser (CNF Conjunction)
