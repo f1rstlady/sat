@@ -5,49 +5,40 @@ module Parser (
 
 import CNF hiding (identifier)
 import Data.Void (Void)
-import Text.Megaparsec (
-  Parsec,
-  between,
-  eof,
-  many,
-  some,
-  try,
-  (<?>),
-  (<|>),
- )
-import Text.Megaparsec.Char (char, letterChar, space)
+import Text.Megaparsec
+import Text.Megaparsec.Char
 
 type Parser = Parsec Void String
 
 -- An identifier consists of lettters.
 identifier :: Parser String
 identifier =
-  some letterChar
-    <?> "identifier"
+  label "identifier" $
+    some letterChar
 
 -- posLiteral := identifier
 posLiteral :: Parser (CNF Literal)
 posLiteral =
-  Pos <$> identifier
-    <?> "positive literal"
+  label "positive literal" $
+    Pos <$> identifier
 
 -- posLiteral := `¬` identifier
 negLiteral :: Parser (CNF Literal)
 negLiteral =
-  char '¬' *> space *> (Neg <$> identifier)
-    <?> "negative literal"
+  label "negative literal" $
+    char '¬' *> space *> (Neg <$> identifier)
 
 -- literal := posLiteral | negLiteral
 literal :: Parser (CNF Literal)
 literal =
-  posLiteral <|> negLiteral
-    <?> "literal"
+  label "literal" $
+    posLiteral <|> negLiteral
 
 -- disjunction := literal | `(` literal ( `∨` literal )+ `)`
 disjunction :: Parser (CNF Disjunction)
 disjunction =
-  (try oneLiteral <|> between (char '(') (char ')') moreLiterals)
-    <?> "disjunction"
+  label "disjunction" $
+    try oneLiteral <|> between (char '(') (char ')') moreLiterals
  where
   oneLiteral = Or . (: []) <$> literal
   moreLiterals =
@@ -59,11 +50,13 @@ disjunction =
 -- conjunction := disjunction ( `∧` disjunction )*
 conjunction :: Parser (CNF Conjunction)
 conjunction =
-  (\d ds -> And (d : ds))
-    <$> disjunction
-    <*> many (try $ space *> char '∧' *> space *> disjunction)
-    <?> "conjunction"
+  label "conjunction" $
+    (\d ds -> And (d : ds))
+      <$> disjunction
+      <*> many (try $ space *> char '∧' *> space *> disjunction)
 
 -- formula := conjunction
 formula :: Parser (CNF Conjunction)
-formula = space *> conjunction <* space <* eof
+formula =
+  label "formula" $
+    space *> conjunction <* space <* eof
