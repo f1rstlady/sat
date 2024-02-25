@@ -20,18 +20,12 @@ symbol = L.symbol space
 identifier :: Parser String
 identifier = label "identifier" $ lexeme $ some letterChar
 
--- posLiteral := identifier
-posLiteral :: Parser (CNF Literal)
-posLiteral = label "positive literal" $ lexeme $ Pos <$> identifier
-
--- posLiteral := `¬` identifier
-negLiteral :: Parser (CNF Literal)
-negLiteral =
-  label "negative literal" $ lexeme $ symbol "¬" *> (Neg <$> identifier)
-
 -- literal := posLiteral | negLiteral
 literal :: Parser (CNF Literal)
 literal = label "literal" $ lexeme $ posLiteral <|> negLiteral
+ where
+  posLiteral = lexeme $ Pos <$> identifier
+  negLiteral = lexeme $ Neg <$> (symbol "¬" *> identifier)
 
 -- disjunction := literal | `(` literal ( `∨` literal )+ `)`
 disjunction :: Parser (CNF Disjunction)
