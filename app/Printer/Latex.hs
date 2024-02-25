@@ -1,15 +1,14 @@
 {-# LANGUAGE GADTs #-}
 
-module Printer.Latex
-  ( ToLatex (..)
-  ) where
+module Printer.Latex (
+  ToLatex (..),
+) where
 
-import           Data.List    (intercalate)
-import           Prelude      hiding (log)
-
-import           CNF
-import           DPLL
-import           Printer.Util
+import CNF
+import DPLL
+import Data.List (intercalate)
+import Printer.Util
+import Prelude hiding (log)
 
 -- Generate code to print data with LaTeX.
 class ToLatex a where
@@ -25,9 +24,9 @@ instance ToLatex (CNF t) where
   toLatex (Neg x) = "\\neg " ++ x
   toLatex (Or ls) =
     case ls of
-      []  -> "\\bot"
+      [] -> "\\bot"
       [k] -> toLatex k
-      _   -> "(" ++ intercalate " \\vee " (map toLatex ls) ++ ")"
+      _ -> "(" ++ intercalate " \\vee " (map toLatex ls) ++ ")"
   toLatex (And ds) =
     case ds of
       [] -> "\\top"
@@ -45,27 +44,31 @@ display f = "\\[ " ++ toLatex f ++ " \\]"
 instance ToLatex Step where
   toLatex (Propagate l f) = "Propagate " ++ inline l ++ ":" ++ printResult f
   toLatex (Eliminate s ls) =
-    "Eliminate the " ++ show s ++ pluralS ls ++ " " ++ literals ++ "." where
-      literals = enumerate (inline <$> ls)
-  toLatex (Branch x pos mNeg) = unlines' $
-    [ "Branch on the variable $" ++ x ++ "$."
-    , "\\begin{enumerate}" ]
-      ++ showBranch (Pos x) pos
-      ++ maybe [] (showBranch (Neg x)) mNeg
-      ++ [ "\\end{enumerate}" ]
-    where
-      showBranch :: CNF Literal -> Log -> [String]
-      showBranch l log = map (indent sw) $
-        ( "\\item Assume " ++ inline l ++ " holds." )
-        -- Indent the steps taken in the branch.
-        : (map (indent sw) . lines $ toLatex log)
+    "Eliminate the " ++ show s ++ pluralS ls ++ " " ++ literals ++ "."
+   where
+    literals = enumerate (inline <$> ls)
+  toLatex (Branch x pos mNeg) =
+    unlines' $
+      [ "Branch on the variable $" ++ x ++ "$."
+      , "\\begin{enumerate}"
+      ]
+        ++ showBranch (Pos x) pos
+        ++ maybe [] (showBranch (Neg x)) mNeg
+        ++ ["\\end{enumerate}"]
+   where
+    showBranch :: CNF Literal -> Log -> [String]
+    showBranch l log =
+      map (indent sw) $
+        ("\\item Assume " ++ inline l ++ " holds.")
+          -- Indent the steps taken in the branch.
+          : (map (indent sw) . lines $ toLatex log)
 
 instance ToLatex Log where
   toLatex = unlines' . map toLatex . steps
 
 -- Print the intermediate result.
 printResult :: Either Bool (CNF t) -> String
-printResult (Left b)  = ' ' : show b ++ "."
+printResult (Left b) = ' ' : show b ++ "."
 printResult (Right f) = '\n' : indent sw (display f)
 
 -- Print a solution to LaTeX.

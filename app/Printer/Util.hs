@@ -1,11 +1,11 @@
-module Printer.Util
-  ( unlines'
-  , indent
-  , pluralS
-  , enumerate
-  ) where
+module Printer.Util (
+  unlines',
+  indent,
+  pluralS,
+  enumerate,
+) where
 
-import           Data.List (intercalate)
+import Data.List (intercalate)
 
 -- A custom unlines function that omits the last '\n'.
 unlines' :: [String] -> String
@@ -17,13 +17,13 @@ indent = (++) . (`replicate` ' ')
 
 -- Print a plural `s` when the list has more than one element.
 pluralS :: [a] -> String
-pluralS []  = error "no element for reference!"
+pluralS [] = error "no element for reference!"
 pluralS [_] = ""
-pluralS _   = "s"
+pluralS _ = "s"
 
 -- Enumerate a list of elements.
 enumerate :: [String] -> String
-enumerate []     = ""
-enumerate [x]    = x
-enumerate [x,y]  = x ++ " and " ++ y
-enumerate (x:xs) = x ++ ", " ++ enumerate xs
+enumerate [] = ""
+enumerate [x] = x
+enumerate [x, y] = x ++ " and " ++ y
+enumerate (x : xs) = x ++ ", " ++ enumerate xs
