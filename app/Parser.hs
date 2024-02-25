@@ -35,25 +35,16 @@ literal = label "literal" $ lexeme $ posLiteral <|> negLiteral
 
 -- disjunction := literal | `(` literal ( `∨` literal )+ `)`
 disjunction :: Parser (CNF Disjunction)
-disjunction =
-  label "disjunction" $
-    lexeme $
-      try oneLiteral <|> between (symbol "(") (symbol ")") moreLiterals
+disjunction = label "disjunction" $ lexeme $ try oneLiteral <|> moreLiterals
  where
   oneLiteral = Or . (: []) <$> literal
   moreLiterals =
-    (\l ls -> Or (l : ls))
-      <$> literal
-      <*> some (try $ symbol "∨" *> literal)
+    Or <$> between (symbol "(") (symbol ")") (sepBy1 literal $ symbol "∨")
 
 -- conjunction := disjunction ( `∧` disjunction )*
 conjunction :: Parser (CNF Conjunction)
 conjunction =
-  label "conjunction" $
-    lexeme $
-      (\d ds -> And (d : ds))
-        <$> disjunction
-        <*> many (try $ symbol "∧" *> disjunction)
+  label "conjunction" $ lexeme $ And <$> sepBy1 disjunction (symbol "∧")
 
 -- formula := conjunction
 formula :: Parser (CNF Conjunction)
