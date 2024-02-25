@@ -25,14 +25,14 @@ literal :: Parser (CNF Literal)
 literal = label "literal" $ posLiteral <|> negLiteral
  where
   posLiteral = Pos <$> identifier
-  negLiteral = Neg <$> (symbol "¬" *> identifier)
+  negLiteral = symbol "¬" *> (Neg <$> identifier)
 
 -- disjunction := literal | `(` literal ( `∨` literal )+ `)`
 disjunction :: Parser (CNF Disjunction)
 disjunction = label "disjunction" $ Or <$> (try oneLiteral <|> moreLiterals)
  where
   oneLiteral = (: []) <$> literal
-  moreLiterals = between (symbol "(") (symbol ")") (sepBy1 literal $ symbol "∨")
+  moreLiterals = symbol "(" *> sepBy1 literal (symbol "∨") <* symbol ")"
 
 -- conjunction := disjunction ( `∧` disjunction )*
 conjunction :: Parser (CNF Conjunction)
