@@ -40,8 +40,8 @@ executable sat
     Printer.Util
 
   build-depends:
-    , base                  ^>=4.15
-    , containers            ^>=0.6
-    , megaparsec            ^>=9.2
-    , mtl                   ^>=2.2
-    , optparse-applicative  ^>=0.16
+    , base
+    , containers
+    , megaparsec
+    , mtl
+    , optparse-applicative
