@@ -29,11 +29,10 @@ literal = label "literal" $ posLiteral <|> negLiteral
 
 -- disjunction := literal | `(` literal ( `∨` literal )+ `)`
 disjunction :: Parser (CNF Disjunction)
-disjunction = label "disjunction" $ try oneLiteral <|> moreLiterals
+disjunction = label "disjunction" $ Or <$> (try oneLiteral <|> moreLiterals)
  where
-  oneLiteral = Or . (: []) <$> literal
-  moreLiterals =
-    Or <$> between (symbol "(") (symbol ")") (sepBy1 literal $ symbol "∨")
+  oneLiteral = (: []) <$> literal
+  moreLiterals = between (symbol "(") (symbol ")") (sepBy1 literal $ symbol "∨")
 
 -- conjunction := disjunction ( `∧` disjunction )*
 conjunction :: Parser (CNF Conjunction)
